@@ -8,8 +8,8 @@
 
     <com.example.moroz_lesson_4.AnalogClockView
         android:id="@+id/analog_clock"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="@dimen/custom_view_size"
+        android:layout_height="@dimen/custom_view_size"
         app:strokeWidthSecondHand="20"
         app:strokeWidthMinuteHand="15"
         app:strokeWidthHourHand="10"
