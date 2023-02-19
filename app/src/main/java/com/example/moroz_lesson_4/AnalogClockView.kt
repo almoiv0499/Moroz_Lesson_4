@@ -160,6 +160,16 @@ class AnalogClockView @JvmOverloads constructor(
             initHourHandPaint(hourHandColor, hourHandStrokeWidth)
             initMinuteHandPaint(minuteHandColor, minuteHandStrokeWidth)
             initSecondHandPaint(secondHandColor, secondHandStrokeWidth)
+
+            // Setting stroke width via code
+            setHourHandStrokeWidth(hourHandStrokeWidth)
+            setMinuteHandStrokeWidth(minuteHandStrokeWidth)
+            setSecondHandStrokeWidth(secondHandStrokeWidth)
+
+            // Setting color via code
+            setHourHandColor(hourHandColor)
+            setMinuteHandColor(minuteHandColor)
+            setSecondHandColor(secondHandColor)
         }
 
         typedArray.recycle()
@@ -207,16 +217,22 @@ class AnalogClockView @JvmOverloads constructor(
 
     private fun drawClockHands(canvas: Canvas?) {
         val clockHandsRadius = radius - CONST_FOR_RADIUS_HAND_SIZE
+
+        // Draw hour hand
         drawHands(
             canvas, calculateCoordinates(
                 hourHand, clockHandsRadius - PADDING_FOR_HOUR_HAND, SKIP_ANGEL_HOUR_HAND
             ), hourHandPaint
         )
+
+        // Draw minute hand
         drawHands(
             canvas, calculateCoordinates(
                 minuteHand, clockHandsRadius - PADDING_FOR_MINUTE_HAND, SKIP_ANGEL_MINUTE_HAND
             ), minuteHandPaint
         )
+
+        // Draw second hand
         drawHands(
             canvas, calculateCoordinates(
                 secondHand, clockHandsRadius - PADDING_FOR_SECOND_HAND, SKIP_ANGEL_SECOND_HAND
@@ -303,4 +319,27 @@ class AnalogClockView @JvmOverloads constructor(
         invalidate()
     }
 
+    fun setHourHandStrokeWidth(strokeWidth: Float) {
+        hourHandPaint?.strokeWidth = strokeWidth
+    }
+
+    fun setMinuteHandStrokeWidth(strokeWidth: Float) {
+        minuteHandPaint?.strokeWidth = strokeWidth
+    }
+
+    fun setSecondHandStrokeWidth(strokeWidth: Float) {
+        secondHandPaint?.strokeWidth = strokeWidth
+    }
+
+    fun setHourHandColor(color: Int) {
+        hourHandPaint?.color = color
+    }
+
+    fun setMinuteHandColor(color: Int) {
+        minuteHandPaint?.color = color
+    }
+
+    fun setSecondHandColor(color: Int) {
+        secondHandPaint?.color = color
+    }
 }
