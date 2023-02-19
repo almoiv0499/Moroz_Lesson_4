@@ -7,4 +7,8 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="hour_hand_color">#F00000</color>
+    <color name="minute_hand_color">#0000F0</color>
+    <color name="second_hand_color">#00F0F0</color>
 </resources>
