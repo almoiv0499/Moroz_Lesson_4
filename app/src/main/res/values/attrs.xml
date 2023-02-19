@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="AnalogClockView">
+        <!-- Color -->
+        <attr name="colorHourHand" format="color" />
+        <attr name="colorMinuteHand" format="color" />
+        <attr name="colorSecondHand" format="color" />
 
+        <!-- Stroke -->
+        <attr name="strokeWidthHourHand" format="float" />
+        <attr name="strokeWidthMinuteHand" format="float" />
+        <attr name="strokeWidthSecondHand" format="float" />
     </declare-styleable>
 </resources>
