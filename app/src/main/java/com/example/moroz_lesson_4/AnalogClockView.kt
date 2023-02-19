@@ -4,9 +4,12 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
 import android.view.View
-import java.util.ArrayList
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.min
@@ -20,16 +23,46 @@ class AnalogClockView @JvmOverloads constructor(
 ) : View(context, attrs, defResAttrs) {
 
     companion object {
+
         private const val DEFAULT_ATTRS_VALUE = 0
 
         // Size const
         private const val DEFAULT_SIZE_VALUE = 0
         private const val PADDING = 50
         private const val DIVIDER_BY_HALF = 2
+        private const val CONST_FOR_RADIUS_HAND_SIZE = 60F
+        private const val PADDING_FOR_HOUR_HAND = 160F
+        private const val PADDING_FOR_MINUTE_HAND = 80F
+        private const val PADDING_FOR_SECOND_HAND = 50F
 
         // Stroke width const
         private const val DEFAULT_STROKE_WIDTH = 0.0F
         private const val CIRCLE_STROKE_WIDTH = 10F
+
+        // Timer const
+        private const val DEFAULT_VALUE_TIMER = 0.0F
+        private const val DELAY_MILLIS = 1000L
+        private const val CALCULATE_HOUR = 60
+
+        // Timer substring
+        private const val PATTERN_DATE_TIME = "HH:mm:ss"
+        private const val HOUR_SUBSTRING_FROM = 0
+        private const val HOUR_SUBSTRING_TO = 2
+        private const val HOUR_SUBSTRING_CONST = 12
+        private const val MINUTE_SUBSTRING_FROM = 3
+        private const val MINUTE_SUBSTRING_TO = 5
+        private const val SECOND_SUBSTRING_FROM = 6
+        private const val SECOND_SUBSTRING_TO = 8
+
+        // Coordinates const
+        private const val COORDINATE_BY_X = 0
+        private const val COORDINATE_BY_Y = 0
+        private const val INITIAL_CAPACITY = 2
+        private const val START_ANGLE = 270F
+        private const val CONST_CIRCLE_HALF = 180
+        private const val SKIP_ANGEL_HOUR_HAND = 30
+        private const val SKIP_ANGEL_MINUTE_HAND = 6
+        private const val SKIP_ANGEL_SECOND_HAND = 6
     }
 
     // Paint circle
@@ -47,9 +80,16 @@ class AnalogClockView @JvmOverloads constructor(
     private var minuteHandPaint: Paint? = null
     private var secondHandPaint: Paint? = null
 
+    // Timer
+    private val handler = Handler(Looper.getMainLooper())
+    private var hourHand = DEFAULT_VALUE_TIMER
+    private var minuteHand = DEFAULT_VALUE_TIMER
+    private var secondHand = DEFAULT_VALUE_TIMER
+
     init {
-        initAllPaints()
+        initCirclePaint()
         setCustomAttrs(attrs = attrs)
+        initTimer()
     }
 
     private fun setCustomAttrs(attrs: AttributeSet?) {
@@ -70,6 +110,7 @@ class AnalogClockView @JvmOverloads constructor(
             val secondHandStrokeWidth =
                 getFloat(R.styleable.AnalogClockView_strokeWidthSecondHand, DEFAULT_STROKE_WIDTH)
 
+            // Init Paints
             initHourHandPaint(hourHandColor, hourHandStrokeWidth)
             initMinuteHandPaint(minuteHandColor, minuteHandStrokeWidth)
             initSecondHandPaint(secondHandColor, secondHandStrokeWidth)
@@ -84,6 +125,7 @@ class AnalogClockView @JvmOverloads constructor(
 
         // Draw
         drawCircle(canvas)
+        drawClockHands(canvas)
     }
 
     private fun initParams() {
@@ -100,10 +142,6 @@ class AnalogClockView @JvmOverloads constructor(
 
     private fun drawCircle(canvas: Canvas?) {
         canvas?.drawCircle(centreX.toFloat(), centreY.toFloat(), radius.toFloat(), circlePaint!!)
-    }
-
-    private fun initAllPaints() {
-        initCirclePaint()
     }
 
     private fun initCirclePaint() {
@@ -126,11 +164,84 @@ class AnalogClockView @JvmOverloads constructor(
         setPaintParams(secondHandPaint!!, color, strokeWidth)
     }
 
+    private fun drawClockHands(canvas: Canvas?) {
+        val clockHandsRadius = radius - CONST_FOR_RADIUS_HAND_SIZE
+        drawHands(
+            canvas, calculateCoordinates(
+                hourHand, clockHandsRadius - PADDING_FOR_HOUR_HAND, SKIP_ANGEL_HOUR_HAND
+            ), hourHandPaint
+        )
+        drawHands(
+            canvas, calculateCoordinates(
+                minuteHand, clockHandsRadius - PADDING_FOR_MINUTE_HAND, SKIP_ANGEL_MINUTE_HAND
+            ), minuteHandPaint
+        )
+        drawHands(
+            canvas, calculateCoordinates(
+                secondHand, clockHandsRadius - PADDING_FOR_SECOND_HAND, SKIP_ANGEL_SECOND_HAND
+            ), secondHandPaint
+        )
+    }
+
+    private fun drawHands(
+        canvas: Canvas?,
+        coordinates: List<Float>,
+        paint: Paint?,
+    ) {
+        canvas?.drawLine(
+            centreX.toFloat(),
+            centreY.toFloat(),
+            coordinates[COORDINATE_BY_X],
+            coordinates[COORDINATE_BY_Y],
+            paint!!
+        )
+    }
+
+    private fun calculateCoordinates(position: Float, radius: Float, skipAngle: Int): List<Float> {
+        val result = ArrayList<Float>(INITIAL_CAPACITY)
+        val startAngle = START_ANGLE
+        val angle = startAngle + (position * skipAngle)
+
+        result.add(
+            COORDINATE_BY_X,
+            (radius * cos(angle * PI / CONST_CIRCLE_HALF) + width / DIVIDER_BY_HALF).toFloat()
+        )
+        result.add(
+            COORDINATE_BY_Y,
+            (height / DIVIDER_BY_HALF + radius * sin(angle * PI / CONST_CIRCLE_HALF)).toFloat()
+        )
+        return result
+    }
+
     private fun setPaintParams(paint: Paint, color: Int, strokeWidth: Float) {
         paint.reset()
         paint.color = color
         paint.style = Paint.Style.STROKE
         paint.strokeWidth = strokeWidth
+    }
+
+    private fun initTimer() {
+        handler.post(object : Runnable {
+            override fun run() {
+                val currentTime: String = SimpleDateFormat(
+                    PATTERN_DATE_TIME, Locale.getDefault()
+                ).format(Date())
+                setClockTime(
+                    currentTime.substring(HOUR_SUBSTRING_FROM, HOUR_SUBSTRING_TO)
+                        .toFloat() % HOUR_SUBSTRING_CONST,
+                    currentTime.substring(MINUTE_SUBSTRING_FROM, MINUTE_SUBSTRING_TO).toFloat(),
+                    currentTime.substring(SECOND_SUBSTRING_FROM, SECOND_SUBSTRING_TO).toFloat()
+                )
+                handler.postDelayed(this, DELAY_MILLIS)
+            }
+        })
+    }
+
+    private fun setClockTime(hour: Float, minute: Float, second: Float) {
+        hourHand = hour + (minute / CALCULATE_HOUR)
+        minuteHand = minute
+        secondHand = second
+        invalidate()
     }
 
 }
