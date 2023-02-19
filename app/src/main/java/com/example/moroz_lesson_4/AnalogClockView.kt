@@ -32,7 +32,7 @@ class AnalogClockView @JvmOverloads constructor(
         private const val PADDING = 50
         private const val DIVIDER_BY_HALF = 2
         private const val CONST_FOR_RADIUS_HAND_SIZE = 60F
-        private const val PADDING_FOR_HOUR_HAND = 200F
+        private const val PADDING_FOR_HOUR_HAND = 150F
         private const val PADDING_FOR_MINUTE_HAND = 100F
         private const val PADDING_FOR_SECOND_HAND = 50F
 
@@ -41,6 +41,7 @@ class AnalogClockView @JvmOverloads constructor(
         private const val DEFAULT_MINUTE_HAND_STROKE_WIDTH = 10F
         private const val DEFAULT_SECOND_HAND_STROKE_WIDTH = 14F
         private const val CIRCLE_STROKE_WIDTH = 10F
+        private const val POINTER_STROKE_WIDTH = 20F
 
         // Timer const
         private const val DEFAULT_VALUE_TIMER = 0.0F
@@ -66,6 +67,11 @@ class AnalogClockView @JvmOverloads constructor(
         private const val SKIP_ANGEL_HOUR_HAND = 30
         private const val SKIP_ANGEL_MINUTE_HAND = 6
         private const val SKIP_ANGEL_SECOND_HAND = 6
+
+        // Pointer
+        private const val POINTER_NUMBER_FROM = 0
+        private const val POINTER_NUMBER_TO = 11
+        private const val COORDINATES_CONST = 0.9
     }
 
     // Paint circle
@@ -89,9 +95,13 @@ class AnalogClockView @JvmOverloads constructor(
     private var minuteHand = DEFAULT_VALUE_TIMER
     private var secondHand = DEFAULT_VALUE_TIMER
 
+    // Pointer
+    private var pointerPaint: Paint? = null
+
     init {
         initCirclePaint()
-        setCustomAttrs(attrs = attrs)
+        setCustomAttrs(attrs)
+        initPointerPaint()
         initTimer()
     }
 
@@ -122,6 +132,7 @@ class AnalogClockView @JvmOverloads constructor(
         // Draw
         drawCircle(canvas)
         drawClockHands(canvas)
+        drawPointer(canvas)
     }
 
     private fun setCustomAttrs(attrs: AttributeSet?) {
@@ -135,21 +146,15 @@ class AnalogClockView @JvmOverloads constructor(
             val secondHandColor = getColor(R.styleable.AnalogClockView_colorSecondHand, Color.GRAY)
 
             // Stroke width for clock hands
-            val hourHandStrokeWidth =
-                getFloat(
-                    R.styleable.AnalogClockView_strokeWidthHourHand,
-                    DEFAULT_HOUR_HAND_STROKE_WIDTH
-                )
-            val minuteHandStrokeWidth =
-                getFloat(
-                    R.styleable.AnalogClockView_strokeWidthMinuteHand,
-                    DEFAULT_MINUTE_HAND_STROKE_WIDTH
-                )
-            val secondHandStrokeWidth =
-                getFloat(
-                    R.styleable.AnalogClockView_strokeWidthSecondHand,
-                    DEFAULT_SECOND_HAND_STROKE_WIDTH
-                )
+            val hourHandStrokeWidth = getFloat(
+                R.styleable.AnalogClockView_strokeWidthHourHand, DEFAULT_HOUR_HAND_STROKE_WIDTH
+            )
+            val minuteHandStrokeWidth = getFloat(
+                R.styleable.AnalogClockView_strokeWidthMinuteHand, DEFAULT_MINUTE_HAND_STROKE_WIDTH
+            )
+            val secondHandStrokeWidth = getFloat(
+                R.styleable.AnalogClockView_strokeWidthSecondHand, DEFAULT_SECOND_HAND_STROKE_WIDTH
+            )
 
             // Init Paints
             initHourHandPaint(hourHandColor, hourHandStrokeWidth)
@@ -171,10 +176,6 @@ class AnalogClockView @JvmOverloads constructor(
         radius = minimum / DIVIDER_BY_HALF - padding
     }
 
-    private fun drawCircle(canvas: Canvas?) {
-        canvas?.drawCircle(centreX.toFloat(), centreY.toFloat(), radius.toFloat(), circlePaint!!)
-    }
-
     private fun initCirclePaint() {
         circlePaint = Paint(Paint.ANTI_ALIAS_FLAG)
         setPaintParams(circlePaint!!, Color.BLACK, CIRCLE_STROKE_WIDTH)
@@ -193,6 +194,15 @@ class AnalogClockView @JvmOverloads constructor(
     private fun initSecondHandPaint(color: Int, strokeWidth: Float) {
         secondHandPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         setPaintParams(secondHandPaint!!, color, strokeWidth)
+    }
+
+    private fun initPointerPaint() {
+        pointerPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+        setPaintParams(pointerPaint!!, Color.BLACK, POINTER_STROKE_WIDTH)
+    }
+
+    private fun drawCircle(canvas: Canvas?) {
+        canvas?.drawCircle(centreX.toFloat(), centreY.toFloat(), radius.toFloat(), circlePaint!!)
     }
 
     private fun drawClockHands(canvas: Canvas?) {
@@ -226,6 +236,24 @@ class AnalogClockView @JvmOverloads constructor(
             coordinates[COORDINATE_BY_Y],
             paint!!
         )
+    }
+
+    private fun drawPointer(canvas: Canvas?) {
+        for (pointer in POINTER_NUMBER_FROM..POINTER_NUMBER_TO) {
+            val angle = PI / 6 * (pointer - 3)
+            val coordinateX =
+                ((mWidth / DIVIDER_BY_HALF) + cos(angle) * radius * COORDINATES_CONST).toFloat()
+            val coordinateY =
+                ((mHeight / DIVIDER_BY_HALF).toDouble() + sin(angle) * radius * COORDINATES_CONST)
+                    .toFloat()
+            canvas?.drawLine(
+                ((mWidth / DIVIDER_BY_HALF) + cos(angle) * radius).toFloat(),
+                ((mHeight / DIVIDER_BY_HALF).toDouble() + sin(angle) * radius).toFloat(),
+                coordinateX,
+                coordinateY,
+                pointerPaint!!
+            )
+        }
     }
 
     private fun calculateCoordinates(position: Float, radius: Float, skipAngle: Int): List<Float> {
