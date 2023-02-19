@@ -32,12 +32,14 @@ class AnalogClockView @JvmOverloads constructor(
         private const val PADDING = 50
         private const val DIVIDER_BY_HALF = 2
         private const val CONST_FOR_RADIUS_HAND_SIZE = 60F
-        private const val PADDING_FOR_HOUR_HAND = 160F
-        private const val PADDING_FOR_MINUTE_HAND = 80F
+        private const val PADDING_FOR_HOUR_HAND = 200F
+        private const val PADDING_FOR_MINUTE_HAND = 100F
         private const val PADDING_FOR_SECOND_HAND = 50F
 
         // Stroke width const
-        private const val DEFAULT_STROKE_WIDTH = 0.0F
+        private const val DEFAULT_HOUR_HAND_STROKE_WIDTH = 6F
+        private const val DEFAULT_MINUTE_HAND_STROKE_WIDTH = 10F
+        private const val DEFAULT_SECOND_HAND_STROKE_WIDTH = 14F
         private const val CIRCLE_STROKE_WIDTH = 10F
 
         // Timer const
@@ -57,7 +59,7 @@ class AnalogClockView @JvmOverloads constructor(
 
         // Coordinates const
         private const val COORDINATE_BY_X = 0
-        private const val COORDINATE_BY_Y = 0
+        private const val COORDINATE_BY_Y = 1
         private const val INITIAL_CAPACITY = 2
         private const val START_ANGLE = 270F
         private const val CONST_CIRCLE_HALF = 180
@@ -134,11 +136,20 @@ class AnalogClockView @JvmOverloads constructor(
 
             // Stroke width for clock hands
             val hourHandStrokeWidth =
-                getFloat(R.styleable.AnalogClockView_strokeWidthHourHand, DEFAULT_STROKE_WIDTH)
+                getFloat(
+                    R.styleable.AnalogClockView_strokeWidthHourHand,
+                    DEFAULT_HOUR_HAND_STROKE_WIDTH
+                )
             val minuteHandStrokeWidth =
-                getFloat(R.styleable.AnalogClockView_strokeWidthMinuteHand, DEFAULT_STROKE_WIDTH)
+                getFloat(
+                    R.styleable.AnalogClockView_strokeWidthMinuteHand,
+                    DEFAULT_MINUTE_HAND_STROKE_WIDTH
+                )
             val secondHandStrokeWidth =
-                getFloat(R.styleable.AnalogClockView_strokeWidthSecondHand, DEFAULT_STROKE_WIDTH)
+                getFloat(
+                    R.styleable.AnalogClockView_strokeWidthSecondHand,
+                    DEFAULT_SECOND_HAND_STROKE_WIDTH
+                )
 
             // Init Paints
             initHourHandPaint(hourHandColor, hourHandStrokeWidth)
@@ -158,7 +169,6 @@ class AnalogClockView @JvmOverloads constructor(
         centreY = mHeight / DIVIDER_BY_HALF
         minimum = min(mHeight, mWidth)
         radius = minimum / DIVIDER_BY_HALF - padding
-
     }
 
     private fun drawCircle(canvas: Canvas?) {
@@ -219,19 +229,19 @@ class AnalogClockView @JvmOverloads constructor(
     }
 
     private fun calculateCoordinates(position: Float, radius: Float, skipAngle: Int): List<Float> {
-        val result = ArrayList<Float>(INITIAL_CAPACITY)
+        val coordinates = ArrayList<Float>(INITIAL_CAPACITY)
         val startAngle = START_ANGLE
         val angle = startAngle + (position * skipAngle)
 
-        result.add(
+        coordinates.add(
             COORDINATE_BY_X,
             (radius * cos(angle * PI / CONST_CIRCLE_HALF) + width / DIVIDER_BY_HALF).toFloat()
         )
-        result.add(
+        coordinates.add(
             COORDINATE_BY_Y,
             (height / DIVIDER_BY_HALF + radius * sin(angle * PI / CONST_CIRCLE_HALF)).toFloat()
         )
-        return result
+        return coordinates
     }
 
     private fun setPaintParams(paint: Paint, color: Int, strokeWidth: Float) {
