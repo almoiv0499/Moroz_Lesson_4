@@ -23,8 +23,9 @@ class AnalogClockView @JvmOverloads constructor(
 ) : View(context, attrs, defResAttrs) {
 
     companion object {
-
         private const val DEFAULT_ATTRS_VALUE = 0
+        private const val ERROR_FOR_MEASURE_WIDTH = "Error in measure width"
+        private const val ERROR_FOR_MEASURE_HEIGHT = "Error in measure height"
 
         // Size const
         private const val DEFAULT_SIZE_VALUE = 0
@@ -92,6 +93,35 @@ class AnalogClockView @JvmOverloads constructor(
         initTimer()
     }
 
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val desiredWidth = MeasureSpec.getSize(widthMeasureSpec)
+        val measureWidth = when (MeasureSpec.getMode(widthMeasureSpec)) {
+            MeasureSpec.AT_MOST -> desiredWidth
+            MeasureSpec.EXACTLY -> desiredWidth
+            MeasureSpec.UNSPECIFIED -> context.resources.displayMetrics.widthPixels
+            else -> error(ERROR_FOR_MEASURE_WIDTH)
+        }
+
+        val desiredHeight = MeasureSpec.getSize(heightMeasureSpec)
+        val measureHeight = when (MeasureSpec.getMode(heightMeasureSpec)) {
+            MeasureSpec.AT_MOST -> desiredHeight
+            MeasureSpec.EXACTLY -> desiredHeight
+            MeasureSpec.UNSPECIFIED -> context.resources.displayMetrics.heightPixels
+            else -> error(ERROR_FOR_MEASURE_HEIGHT)
+        }
+
+        setMeasuredDimension(measureWidth, measureHeight)
+    }
+
+    override fun onDraw(canvas: Canvas?) {
+        super.onDraw(canvas)
+        initParams()
+
+        // Draw
+        drawCircle(canvas)
+        drawClockHands(canvas)
+    }
+
     private fun setCustomAttrs(attrs: AttributeSet?) {
         if (attrs == null) return
         val typedArray = context.obtainStyledAttributes(attrs, R.styleable.AnalogClockView)
@@ -117,15 +147,6 @@ class AnalogClockView @JvmOverloads constructor(
         }
 
         typedArray.recycle()
-    }
-
-    override fun onDraw(canvas: Canvas?) {
-        super.onDraw(canvas)
-        initParams()
-
-        // Draw
-        drawCircle(canvas)
-        drawClockHands(canvas)
     }
 
     private fun initParams() {
