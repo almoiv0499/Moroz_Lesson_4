@@ -6,10 +6,13 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!"
+    <com.example.moroz_lesson_4.AnalogClockView
+        android:id="@+id/analog_clock"
+        android:layout_width="@dimen/custom_view_size"
+        android:layout_height="@dimen/custom_view_size"
+        app:strokeWidthSecondHand="20"
+        app:strokeWidthMinuteHand="15"
+        app:strokeWidthHourHand="10"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
